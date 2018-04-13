@@ -3,4 +3,4 @@ all:
 	gcc rw_write.c -pthread -o write
 	gcc rw_read.c -pthread -o read
 clean:
-	rm init write read a.out
+	rm init write read

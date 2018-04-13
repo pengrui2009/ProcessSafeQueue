@@ -7,14 +7,54 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <stdlib.h>
 
-int main(){
-   
+#define NO_ELEMENTS 600
+size_t shm_size = sizeof(char) * NO_ELEMENTS;
+
+int main(int argc, char *argv[]){
+
+    int my_weird_case = -1;
+    if(argc != 3 ){
+        printf("That's too much, man! \n");
+    }
+
+    int choice = atoi(argv[1]); // as if I've one
+    int  = atoi()
+
     sem_t * reader = sem_open("readers", O_CREAT, 0600, 1);
     sem_t * writer = sem_open("writer", O_CREAT, 0600, 1);
     sem_t * mut = sem_open("mut", O_CREAT, 0600, 1);
 
+    int shm_id;
+    key_t key = 123456;
+    char *shm;
+
+    // Creating a segment
+    if ((shm_id = shmget(key, shm_size, IPC_CREAT | 0666)) < 0) {
+        perror("shm_get error");
+        exit(1);
+    }
+
+    // shm is the link the shared mem
+    if ((shm = shmat(shm_id, NULL, 0)) == (char *) -1) {
+        perror("error in shmat");
+        exit(1);
+    }
+
     int count;
+
+    // one followed by index
+    // two followed by dequeue
+    char choice = getc(stdin);
+    int index;
+
+    if(choice == '1')
+         scanf("%d",&index);
+    
 
     // lock(mutex)
     sem_wait(mut);
@@ -29,9 +69,10 @@ int main(){
     sem_post(mut);
     
     // reading is done
-    char ch[100];
-    scanf("%s",ch);
-    printf("I'm reading");
+    printf("I'm reading\n\n");
+    if(choice == '1'){
+        printf("Index : %d \n Content: %c",index, shm[index+1]);
+    }
 
     // lock(mutex)
     sem_wait(mut);
