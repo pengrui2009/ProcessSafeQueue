@@ -17,13 +17,10 @@ size_t shm_size = sizeof(char) * NO_ELEMENTS;
 
 int main(int argc, char *argv[]){
 
-    int my_weird_case = -1;
-    if(argc != 3 ){
+    if(argc != 2){
         printf("That's too much, man! \n");
     }
-
-    int choice = atoi(argv[1]); // as if I've one
-    int  = atoi()
+    int index = atoi(argv[1]); 
 
     sem_t * reader = sem_open("readers", O_CREAT, 0600, 1);
     sem_t * writer = sem_open("writer", O_CREAT, 0600, 1);
@@ -47,15 +44,6 @@ int main(int argc, char *argv[]){
 
     int count;
 
-    // one followed by index
-    // two followed by dequeue
-    char choice = getc(stdin);
-    int index;
-
-    if(choice == '1')
-         scanf("%d",&index);
-    
-
     // lock(mutex)
     sem_wait(mut);
 
@@ -69,10 +57,9 @@ int main(int argc, char *argv[]){
     sem_post(mut);
     
     // reading is done
-    printf("I'm reading\n\n");
-    if(choice == '1'){
-        printf("Index : %d \n Content: %c",index, shm[index+1]);
-    }
+    printf("I'm reading: \t");
+    printf("Index : %d \t Content: %c\n",index, shm[index]);
+    
 
     // lock(mutex)
     sem_wait(mut);

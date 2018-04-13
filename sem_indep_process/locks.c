@@ -12,7 +12,10 @@
 #include <sys/shm.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <fcntl.h>           /* For O_* constants */
 #include "locks.h"
+
 
 
 void get_read_lock(struct lock_custom *lock){
@@ -85,8 +88,9 @@ struct lock_custom *init_lock_custom(struct lock_custom *lock, char *id) {
     char mut[100] = "mut";
     lock->mut = sem_open(strcat(mut,id), O_CREAT, 0600, 1);
 
-    sem_post(lock->writer);
-    sem_post(lock->mut);
+    // sem_post(lock->writer);
+    // sem_post(lock->mut);
+    sem_wait(lock->reader);
 
     return lock;
 }
@@ -112,7 +116,7 @@ struct lame_queue *init_queue(int id){
         exit(1);
     }
 
-    queue = (struct lame_queue *)malloc(sizeof(struct lame_queue));
+    // queue = (struct lame_queue *)malloc(sizeof(struct lame_queue));
 
     queue->start_index = 0;
     queue->end_index = 0;
@@ -123,16 +127,16 @@ struct lame_queue *init_queue(int id){
     char enqueue_muttex_str[100];
     sprintf(enqueue_muttex_str, "enqueue_muttex%d", id);
     queue->enqueue_muttex = sem_open(enqueue_muttex_str, O_CREAT, 0600, 1);
-    sem_post(queue->enqueue_muttex);
+    // sem_post(queue->enqueue_muttex);
 
     char dequeue_muttex_str[100];
     sprintf(dequeue_muttex_str, "dequeue_muttex%d", id);
-    queue->enqueue_muttex = sem_open(dequeue_muttex_str, O_CREAT, 0600, 1);
-    sem_post(queue->dequeue_muttex);
+    queue->dequeue_muttex = sem_open(dequeue_muttex_str, O_CREAT, 0600, 1);
+    // sem_post(queue->dequeue_muttex);
 
     for (int i = 0; i < MAX_CAPACITY; ++i) {
         char idd[50];
-        sprintf(idd, "%d",i);
+        sprintf(idd, "q%delement%d", id,i);
         queue->array[i].lock = *init_lock_custom(&queue->array[i].lock,  idd);
     	queue->array->data = (char *) malloc(1024*sizeof(char));
     }
@@ -141,11 +145,9 @@ struct lame_queue *init_queue(int id){
     return queue;
 }
 
-struct lame_queue *sync_queue(int id){
-	
+struct lame_queue *sync_queue(int id, struct lame_queue *queue) {
 	int shm_id;
     key_t key = id;
-    struct lame_queue *queue;
 
     // Creating a segment
     if ((shm_id = shmget(key, sizeof(struct lame_queue), IPC_CREAT | 0666)) < 0) {
@@ -194,9 +196,15 @@ char * queue_dequeue(struct lame_queue *queue){
 }
 
 int main(int argc, char const *argv[]){
-	struct lame_queue *queue = init_queue(1234);
+	struct lame_queue *queue;
+    queue = sync_queue(1234, queue);
     // get_read_lock(&queue->array[1].lock);
     // print_lock(&queue->array[1].lock);
     // realease_read_lock(&queue->array[1].lock);
+    // print_lock(&queue->array[2].lock);
+    queue->array[2].data = "sup";
+    // char x[100] ="what up";
+    queue_enqueue(queue, "sup");
+
 	return 0;
 }

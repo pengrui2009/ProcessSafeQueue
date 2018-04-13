@@ -22,7 +22,7 @@ struct lame_queue {
 
 struct lame_queue *init_queue(int id);
 
-struct lame_queue *sync_queue(int id);
+struct lame_queue *sync_queue(int id,  struct lame_queue *queue);
 
 void queue_read_index(struct lame_queue *queue, int index);
 
