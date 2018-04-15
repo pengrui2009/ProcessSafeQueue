@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
 
     sem_wait(writer);
 
-    printf("I'm writing data \"%c\" at index \"%d\"\n", data, index);
+    printf("I'm writing data: \"%c\" at index:\"%d\"\n", data, index);
     shm[index] = data;
 
     sem_post(writer);

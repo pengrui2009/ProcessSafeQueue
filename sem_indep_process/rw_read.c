@@ -15,16 +15,16 @@
 #define NO_ELEMENTS 600
 size_t shm_size = sizeof(char) * NO_ELEMENTS;
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
 
-    if(argc != 2){
+    if (argc != 2) {
         printf("That's too much, man! \n");
     }
-    int index = atoi(argv[1]); 
+    int index = atoi(argv[1]);
 
-    sem_t * reader = sem_open("readers", O_CREAT, 0600, 1);
-    sem_t * writer = sem_open("writer", O_CREAT, 0600, 1);
-    sem_t * mut = sem_open("mut", O_CREAT, 0600, 1);
+    sem_t *reader = sem_open("readers", O_CREAT, 0600, 1);
+    sem_t *writer = sem_open("writer", O_CREAT, 0600, 1);
+    sem_t *mut = sem_open("mut", O_CREAT, 0600, 1);
 
     int shm_id;
     key_t key = 123456;
@@ -50,16 +50,16 @@ int main(int argc, char *argv[]){
     sem_post(reader); //read_count++
 
     sem_getvalue(reader, &count);
-    if(count==1){
+    if (count == 1) {
         sem_wait(writer);
     }
 
     sem_post(mut);
-    
+
     // reading is done
     printf("I'm reading: \t");
-    printf("Index : %d \t Content: %c\n",index, shm[index]);
-    
+    printf("Index: %d \t Content: %c\n", index, shm[index]);
+
 
     // lock(mutex)
     sem_wait(mut);
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]){
     sem_wait(reader); // readcount--
 
     sem_getvalue(reader, &count);
-    if(count==0){
+    if (count == 0) {
         sem_post(writer);
     }
 
