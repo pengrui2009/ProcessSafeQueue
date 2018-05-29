@@ -12,6 +12,12 @@ solving the second reader writers problem.
 ### Default compilation
 
 ```
+git clone https://github.com/geekSiddharth/ReadersWritersThings.git
+cd process_safe_queue
+```
+
+
+```
 make all
 ```
 
@@ -32,11 +38,8 @@ It also makes a binary called `test` that contains very basic usage of the code.
     ```
     gcc test.c -lsafequeue -pthread
     ```
-    Here test.c is the name of your.
+    Here test.c is the name of your test file.
 
-## Testing
-
-See Docs and edit test.c accordingly. Do make all. Execute ./test
 
 ## Error handled:
  - Underflow
