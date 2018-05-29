@@ -1,9 +1,6 @@
-Name: Siddharth Yadav
-Roll Number: 2016268
-
 # Process Safe Queue
 
-This submission create an library for process safe queue. This queue can be used across multiple process inside a single system while
+This create an library for process safe queue. This queue can be used across multiple process inside a single system while
 solving the second reader writers problem.
 
 ## Usage
