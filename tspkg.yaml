@@ -1,0 +1,12 @@
+name: libprocessSafeQueue
+version: __from_changelog__
+maintainer: rui.peng <pengrui_2009@163.com>
+cmake: any
+
+build: |
+  mkdir -p build
+  pushd build
+    cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ..
+    make -j$(nproc)
+    make install
+  popd

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package format="2">
+
+  <name>libprocessSafeQueue</name>
+  <version>0.1.0</version>
+  <description>library for process safe queue</description>
+  <maintainer email="pengrui_2009@163.com">rui.peng</maintainer>
+  <license>Tusimple</license>
+
+</package>
