@@ -99,18 +99,32 @@ void print_lock(struct CustomLock *lock_ptr) {
 }
 
 
-static struct CustomLock *InitCustomLock(struct CustomLock *lock_ptr, char *id_ptr, int sync) {
+static int InitCustomLock(struct CustomLock *lock_ptr, char *id_ptr, int sync) {
 
-    lock_ptr = (struct CustomLock *) malloc(sizeof(struct CustomLock));
+    int result = -1;
+    // lock_ptr = (struct CustomLock *) malloc(sizeof(struct CustomLock));
 
     char readers[100] = "readers";
     lock_ptr->reader = sem_open(strcat(readers, id_ptr), O_CREAT, 0600, 1);
-
+    if (SEM_FAILED == lock_ptr->reader)
+    {
+        result = -1;
+        return result;
+    }
     char writer[100] = "writer";
     lock_ptr->writer = sem_open(strcat(writer, id_ptr), O_CREAT, 0600, 1);
-
+    if (SEM_FAILED == lock_ptr->writer)
+    {
+        result = -1;
+        return result;
+    }
     char mut[100] = "mut";
     lock_ptr->mut = sem_open(strcat(mut, id_ptr), O_CREAT, 0600, 1);
+    if (SEM_FAILED == lock_ptr->mut)
+    {
+        result = -1;
+        return result;
+    }
 
     if (sync == 0) {
         // sem_post(lock->writer);
@@ -118,7 +132,9 @@ static struct CustomLock *InitCustomLock(struct CustomLock *lock_ptr, char *id_p
         sem_wait(lock_ptr->reader);
     }
 
-    return lock_ptr;
+    // return lock_ptr;
+    result = 0;
+    return result;
 }
 
 /**
@@ -129,28 +145,32 @@ static struct CustomLock *InitCustomLock(struct CustomLock *lock_ptr, char *id_p
  * @param sync 
  * @return struct ProcessSafeQueue* 
  */
-struct ProcessSafeQueue *InitQueue(int id, struct ProcessSafeQueue *queue_ptr, int sync) {
+int InitQueue(int id, struct ProcessSafeQueue **queue_ptr, int sync) {
 
+    int result = -1;
     int shm_id;
     key_t key = id;
 
     // Creating a segment
     if ((shm_id = shmget(key, sizeof(struct ProcessSafeQueue), IPC_CREAT |  0600)) < 0) {
         perror("shm_get error");
-        exit(1);
+        result = -1;
+        return result;
     }
 
     // shm is the link the shared mem
-    if ((queue_ptr = (struct ProcessSafeQueue *)shmat(shm_id, NULL, 0)) == (struct ProcessSafeQueue *) -1) {
+    if ((*queue_ptr = (struct ProcessSafeQueue *)shmat(shm_id, NULL, 0)) == (struct ProcessSafeQueue *) -1) {
         perror("error in shmat");
-        exit(1);
+        shmctl(shmget(shm_id, sizeof(struct ProcessSafeQueue), IPC_CREAT | 0666), IPC_RMID, NULL);
+        result = -2;
+        return result;
     }
 
     if (sync == CREAT) {
         // init
-        queue_ptr->start_index = 0;
-        queue_ptr->end_index = 0;
-        queue_ptr->size = 0;
+        (*queue_ptr)->start_index = 0;
+        (*queue_ptr)->end_index = 0;
+        (*queue_ptr)->size = 0;
         // TODO: what about malloc?
     }
 
@@ -159,21 +179,26 @@ struct ProcessSafeQueue *InitQueue(int id, struct ProcessSafeQueue *queue_ptr, i
     */
     char enqueue_muttex_str[100];
     sprintf(enqueue_muttex_str, "enqueue_muttex%d", id);
-    queue_ptr->enqueue_muttex = sem_open(enqueue_muttex_str, O_CREAT, 0600, 1);
+    (*queue_ptr)->enqueue_muttex = sem_open(enqueue_muttex_str, O_CREAT, 0600, 1);
     // sem_post(queue->enqueue_muttex);
 
     char dequeue_muttex_str[100];
     sprintf(dequeue_muttex_str, "dequeue_muttex%d", id);
-    queue_ptr->dequeue_muttex = sem_open(dequeue_muttex_str, O_CREAT, 0600, 1);
+    (*queue_ptr)->dequeue_muttex = sem_open(dequeue_muttex_str, O_CREAT, 0600, 1);
     // sem_post(queue->dequeue_muttex);
-
+    result = 0;
+    
     for (int i = 0; i < MAX_CAPACITY; ++i) {
         char idd[50];
         sprintf(idd, "q%delement%d", id, i);
-        queue_ptr->array[i].lock = *InitCustomLock(&queue_ptr->array[i].lock, idd, sync);
+        result = InitCustomLock(&(*queue_ptr)->array[i].lock, idd, sync);
+        if (result)
+        {
+            break;
+        }
     }
 
-    return queue_ptr;
+    return result;
 }
 
 
@@ -288,6 +313,7 @@ int Dequeue(struct ProcessSafeQueue *queue_ptr, void *data_ptr,
     }
 
     sem_wait(queue_ptr->dequeue_muttex);
+
     if (queue_ptr->size > 0)
     {
         GetWriteLock(&queue_ptr->array[queue_ptr->start_index].lock);

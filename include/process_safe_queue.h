@@ -54,7 +54,7 @@ struct CustomLock {
 struct Element {
     uint8_t buffer_data[DATA_CAPACITY]; /* The data in the element*/
     uint32_t buffer_len;                /* The length in the element*/
-    struct CustomLock lock; /* Sets of locks for the safety elemet*/
+    struct CustomLock lock; /* Sets of locks for the safety element*/
 };
 
 struct ProcessSafeQueue {
@@ -79,7 +79,7 @@ struct ProcessSafeQueue {
  * - SYNC: if the queue has already been created and you need a pointer to it
  * @return a pointer the ProcessSafeQueue with @param id
  */
-struct ProcessSafeQueue *InitQueue(int id, struct ProcessSafeQueue *queue_ptr, int sync);
+int InitQueue(int id, struct ProcessSafeQueue **queue_ptr, int sync);
 
 /**
  * Prints the content at index @param index of the ProcessSafeQueue

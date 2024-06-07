@@ -3,10 +3,14 @@
 
 int main()
 {
-    struct ProcessSafeQueue *queue_ptr = 
-        (struct ProcessSafeQueue *)malloc(sizeof(struct ProcessSafeQueue)); 
-
-    queue_ptr = InitQueue(560, queue_ptr, SYNC);
+    // struct ProcessSafeQueue *queue_ptr = 
+    //     (struct ProcessSafeQueue *)malloc(sizeof(struct ProcessSafeQueue)); 
+    struct ProcessSafeQueue *queue_ptr = NULL;
+    if (InitQueue(580, &queue_ptr, SYNC))
+    {
+        printf("InitQueue failed!\n");
+        return -1;
+    }
 
     PrintQueue(queue_ptr, ONLY_DATA);
     uint8_t *buffer_data = "first queue";
