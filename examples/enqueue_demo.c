@@ -1,8 +1,9 @@
 #include "process_safe_queue.h"
 #include <unistd.h>
 
-int main()
+int main(int argc, char *argv[])
 {
+
     // struct ProcessSafeQueue *queue_ptr = 
     //     (struct ProcessSafeQueue *)malloc(sizeof(struct ProcessSafeQueue)); 
     struct ProcessSafeQueue *queue_ptr = NULL;
@@ -13,7 +14,14 @@ int main()
     }
 
     PrintQueue(queue_ptr, ONLY_DATA);
-    uint8_t *buffer_data = "first queue";
+    uint8_t buffer_data[50] = {0};
+    if (argc >=2 )
+    {
+        sprintf(buffer_data, "this is queue element %s", argv[1]);
+    } else {
+        sprintf(buffer_data, "this is queue element0");
+    }
+    
     uint32_t buffer_len = strlen(buffer_data);
 
     if (Enqueue(queue_ptr, buffer_data, buffer_len))

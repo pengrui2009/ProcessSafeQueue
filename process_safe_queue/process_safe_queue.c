@@ -28,7 +28,7 @@ static void GetReadLock(struct CustomLock *lock_ptr) {
 
     int count;
 
-    sem_wait(lock_ptr->mut);        // lock(mutex)
+    sem_wait(lock_ptr->mutex);        // lock(mutex)
     sem_post(lock_ptr->reader);    //read_count++
 
     sem_getvalue(lock_ptr->reader, &count);
@@ -36,7 +36,7 @@ static void GetReadLock(struct CustomLock *lock_ptr) {
         sem_wait(lock_ptr->writer);
     }
 
-    sem_post(lock_ptr->mut);
+    sem_post(lock_ptr->mutex);
 }
 
 /**
@@ -48,7 +48,7 @@ static void RealeaseReadLock(struct CustomLock *lock_ptr) {
 
     int count;
 
-    sem_wait(lock_ptr->mut);        // lock(mutex)
+    sem_wait(lock_ptr->mutex);        // lock(mutex)
     sem_wait(lock_ptr->reader);    //read_count--
 
     sem_getvalue(lock_ptr->reader, &count);
@@ -56,7 +56,7 @@ static void RealeaseReadLock(struct CustomLock *lock_ptr) {
         sem_post(lock_ptr->writer);
     }
 
-    sem_post(lock_ptr->mut);
+    sem_post(lock_ptr->mutex);
 }
 
 /**
@@ -85,7 +85,7 @@ static void RealeaseWriteLock(struct CustomLock *lock_ptr) {
 void print_lock(struct CustomLock *lock_ptr) {
 
     int count_mut;
-    sem_getvalue(lock_ptr->mut, &count_mut);
+    sem_getvalue(lock_ptr->mutex, &count_mut);
     printf("mut: %d\n", count_mut);
 
     int count_reader;
@@ -119,8 +119,8 @@ static int InitCustomLock(struct CustomLock *lock_ptr, char *id_ptr, int sync) {
         return result;
     }
     char mut[100] = "mut";
-    lock_ptr->mut = sem_open(strcat(mut, id_ptr), O_CREAT, 0600, 1);
-    if (SEM_FAILED == lock_ptr->mut)
+    lock_ptr->mutex = sem_open(strcat(mut, id_ptr), O_CREAT, 0600, 1);
+    if (SEM_FAILED == lock_ptr->mutex)
     {
         result = -1;
         return result;
@@ -128,7 +128,7 @@ static int InitCustomLock(struct CustomLock *lock_ptr, char *id_ptr, int sync) {
 
     if (sync == 0) {
         // sem_post(lock->writer);
-        // sem_post(lock->mut);
+        // sem_post(lock->mutex);
         sem_wait(lock_ptr->reader);
     }
 
@@ -187,7 +187,7 @@ int InitQueue(int id, struct ProcessSafeQueue **queue_ptr, int sync) {
     (*queue_ptr)->dequeue_muttex = sem_open(dequeue_muttex_str, O_CREAT, 0600, 1);
     // sem_post(queue->dequeue_muttex);
     result = 0;
-    
+
     for (int i = 0; i < MAX_CAPACITY; ++i) {
         char idd[50];
         sprintf(idd, "q%delement%d", id, i);
@@ -205,6 +205,8 @@ int InitQueue(int id, struct ProcessSafeQueue **queue_ptr, int sync) {
 void PrintQueue(struct ProcessSafeQueue *queue_ptr, int lock) {
 
     printf("\n --------- Printing ------- \n");
+    printf("start_index:%d end_index:%d size:%d\n", 
+        queue_ptr->start_index, queue_ptr->end_index, queue_ptr->size);
     for (int i = queue_ptr->start_index,j=0; i < queue_ptr->end_index; ++i, ++j) {
         printf("---- Element #%d ---\n", j);
         printf("Data: %s\n", queue_ptr->array[i].buffer_data);
@@ -262,7 +264,7 @@ int Enqueue(struct ProcessSafeQueue *queue_ptr, const void *data_ptr,
     }
 
     sem_wait(queue_ptr->enqueue_muttex);
-    if (queue_ptr->size < DATA_CAPACITY)
+    if (queue_ptr->size < MAX_CAPACITY)
     {
         GetWriteLock(&queue_ptr->array[queue_ptr->end_index].lock);
         memcpy(queue_ptr->array[queue_ptr->end_index].buffer_data, data_ptr, data_len);
@@ -356,13 +358,13 @@ void Destroy(struct ProcessSafeQueue *queue_ptr, int id) {
     sem_destroy(queue_ptr->dequeue_muttex);
 
     for (int i = 0; i < MAX_CAPACITY; ++i) {
-        sem_close(queue_ptr->array[i].lock.mut);
+        sem_close(queue_ptr->array[i].lock.mutex);
         sem_close(queue_ptr->array[i].lock.reader);
         sem_close(queue_ptr->array[i].lock.writer);
 
         sem_destroy(queue_ptr->array[i].lock.writer);
         sem_destroy(queue_ptr->array[i].lock.reader);
-        sem_destroy(queue_ptr->array[i].lock.mut);
+        sem_destroy(queue_ptr->array[i].lock.mutex);
     }
 
 }

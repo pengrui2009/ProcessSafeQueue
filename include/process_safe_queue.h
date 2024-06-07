@@ -45,7 +45,7 @@
 struct CustomLock {
     sem_t *reader;
     sem_t *writer;
-    sem_t *mut;
+    sem_t *mutex;
 };
 
 /**

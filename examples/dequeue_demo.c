@@ -22,7 +22,7 @@ int main()
     {
         printf("Dequeue data: failed!\n");
     } else {
-        printf("Dequeue data: success.\n");
+        printf("Dequeue data: %s.\n", (char *)buffer_data);
     }
 
     PrintQueue(queue_ptr, ONLY_DATA);
