@@ -38,32 +38,24 @@
 #define EVERYTHING 1 // Used with print_queue
 #define ONLY_DATA 0 // Used with print queue
 
-
-/**
- * lock_custom represents set of locks required for the safety of each queue element
- */
-struct CustomLock {
-    sem_t *reader;
-    sem_t *writer;
-    sem_t *mutex;
-};
-
 /**
  * Represents each element in the queue
  */
 struct Element {
     uint8_t buffer_data[DATA_CAPACITY]; /* The data in the element*/
     uint32_t buffer_len;                /* The length in the element*/
-    struct CustomLock lock; /* Sets of locks for the safety element*/
 };
 
-struct ProcessSafeQueue {
+struct Queue {
     int start_index;                    /*general queue start index*/
     int end_index;                      /*general queue end index*/
     int size;                           /*the size of queue element*/
-    sem_t *enqueue_muttex;              /*Ensures atomicity of enqueue operation */
-    sem_t *dequeue_muttex;              /*Ensures atomicity of dequeue operation */
     struct Element array[MAX_CAPACITY]; /*Inner data structure to store contents in the queue*/
+};
+
+struct ProcessSafeQueue {
+    struct Queue *queue_data_ptr;
+    sem_t *queue_mutex_ptr;                   /*Ensures atomicity of enqueue operation */
 };
 
 /**
@@ -79,25 +71,7 @@ struct ProcessSafeQueue {
  * - SYNC: if the queue has already been created and you need a pointer to it
  * @return a pointer the ProcessSafeQueue with @param id
  */
-int InitQueue(int id, struct ProcessSafeQueue **queue_ptr, int sync);
-
-/**
- * Prints the content at index @param index of the ProcessSafeQueue
- * @param queue pointer to the safe queue
- * @param index starts from start_index to end_index.
- * index whose content you want to be printed
- * @returns 0 if successfull else -1
- */
-int ReadQueueIndex(struct ProcessSafeQueue *queue_ptr, int index);
-
-/**
- * Writes the content, @param str, at index, @param index. of the ProcessSafeQueue
- * @param queue pointer to the safe queue
- * @param index starts from start_index to end_index.index where you want to be writen
- * @param str the content you want to added
- * @returns 0 if successfull else -1
- */
-int WriteQueueIndex(struct ProcessSafeQueue *queue_ptr, int index, char *str);
+int InitQueue(int id, struct ProcessSafeQueue *queue_ptr, int sync);
 
 /**
  * Enqueues the content, str, in queue
@@ -114,7 +88,7 @@ int WriteQueueIndex(struct ProcessSafeQueue *queue_ptr, int index, char *str);
  * @param data_len :input data length
  * @return int : 0:success others:failed
  */
-int Enqueue(struct ProcessSafeQueue *queue_ptr, 
+int EnQueue(struct ProcessSafeQueue *queue_ptr, 
             const void *data_ptr, const uint32_t data_len);
 
 /**
@@ -126,9 +100,21 @@ int Enqueue(struct ProcessSafeQueue *queue_ptr,
  * @param data_len  :output data length
  * @return int : 0:success others:failed
  */
-int Dequeue(struct ProcessSafeQueue *queue_ptr, void *data_ptr, 
+int DeQueue(struct ProcessSafeQueue *queue_ptr, void *data_ptr, 
               uint32_t data_size, uint32_t *data_len);
 
+/**
+ * @brief wait and dequeue from process safe queue
+ * 
+ * @param queue_ptr 
+ * @param data_ptr 
+ * @param data_size 
+ * @param data_len 
+ * @param timeout 
+ * @return int 
+ */
+int WaitDeQueue(struct ProcessSafeQueue *queue_ptr, void *data_ptr, 
+    uint32_t data_size, uint32_t *data_len, uint32_t timeout);
 /**
  * Prints the queue in a weird format
  * NOT INTER PROCESS PROCESS SAFE
@@ -139,7 +125,21 @@ int Dequeue(struct ProcessSafeQueue *queue_ptr, void *data_ptr,
  */
 void PrintQueue(struct ProcessSafeQueue *queue_ptr, int lock);
 
+/**
+ * @brief Get the Queue Size object
+ * 
+ * @param queue_ptr 
+ * @return int  : size of queue
+ */
+int GetQueueSize(struct ProcessSafeQueue *queue_ptr);
 
+/**
+ * @brief is queue empty
+ * 
+ * @param queue_ptr 
+ * @return int  : 0:not empty, 1:empty
+ */
+int IsQueueEmpty(struct ProcessSafeQueue *queue_ptr);
 /**
  * Tries to destroy the queue.
  * NOT SAFE TO USE

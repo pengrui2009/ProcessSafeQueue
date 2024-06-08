@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(libProcessSafeQueue)
 
 # SET(CMAKE_CXX_FLAGS "-std=c11 -O3 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 
 # find_package(catkin REQUIRED COMPONENTS
 #   roscpp
@@ -27,20 +28,15 @@ target_link_libraries(processSafeQueue
 #   ros_${PROJECT_NAME}
 #   ${catkin_LIBRARIES}
 # )
-include_directories(
-    include
-)
 
+
+##################build examples####################
 add_executable(enqueue_demo
     examples/enqueue_demo.c
 )
 target_link_libraries(enqueue_demo
     processSafeQueue
     pthread
-)
-
-include_directories(
-    include
 )
 
 add_executable(dequeue_demo
