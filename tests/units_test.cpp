@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-
+#include <array>
 #include "process_safe_queue.h"
 
 TEST(GQueueTest, QueueInitTest) {
@@ -22,9 +22,9 @@ TEST(GQueueTest, QueueDeInitTest) {
   EXPECT_EQ(0, Queue_Size(&queue));
 
   EXPECT_EQ(1, Queue_IsEmpty(&queue));
-  char *buffer_data = "Hello World";
-  uint32_t buffer_len = strlen(buffer_data);
-  EXPECT_EQ(0, Queue_Push(&queue, reinterpret_cast<void*>(buffer_data), buffer_len));
+  std::string buffer_data = "Hello World";
+  uint32_t buffer_len = buffer_data.length();
+  EXPECT_EQ(0, Queue_Push(&queue, buffer_data.data(), buffer_len));
 
   EXPECT_EQ(0, Queue_Deinit(&queue, 570));
 
@@ -39,9 +39,9 @@ TEST(GQueueTest, QueuePushTest) {
   struct ProcessSafeQueue queue;
   EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
 
-  char *buffer_data = "Hello World";
-  uint32_t buffer_len = strlen(buffer_data);
-  EXPECT_EQ(0, Queue_Push(&queue, reinterpret_cast<void*>(buffer_data), buffer_len));
+  std::string buffer_data = "Hello World";
+  uint32_t buffer_len = buffer_data.length();
+  EXPECT_EQ(0, Queue_Push(&queue, buffer_data.data(), buffer_len));
   EXPECT_EQ(1, Queue_Size(&queue));
   EXPECT_EQ(0, Queue_IsEmpty(&queue));
 
@@ -52,9 +52,9 @@ TEST(GQueueTest, QueuePopTest) {
   struct ProcessSafeQueue queue;
   EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
 
-  char *buffer_data = "Hello World";
-  uint32_t buffer_len = strlen(buffer_data);
-  EXPECT_EQ(0, Queue_Push(&queue, reinterpret_cast<void*>(buffer_data), buffer_len));
+  std::string buffer_data = "Hello World";
+  uint32_t buffer_len = buffer_data.length();
+  EXPECT_EQ(0, Queue_Push(&queue, buffer_data.data(), buffer_len));
   EXPECT_EQ(1, Queue_Size(&queue));
   EXPECT_EQ(0, Queue_IsEmpty(&queue));
 
@@ -64,7 +64,7 @@ TEST(GQueueTest, QueuePopTest) {
   uint32_t buffer1_len = 0;
   EXPECT_EQ(0, Queue_Pop(&queue, reinterpret_cast<void*>(buffer1_data), buffer1_size, &buffer1_len));
   
-  EXPECT_EQ(0, strcmp((char *)buffer1_data, buffer_data));
+  EXPECT_EQ(0, strcmp((char *)buffer1_data, buffer_data.c_str()));
   EXPECT_EQ(buffer_len, buffer1_len);
   EXPECT_EQ(0, Queue_Size(&queue));
   EXPECT_EQ(1, Queue_IsEmpty(&queue));
@@ -79,9 +79,9 @@ TEST(GQueueTest, QueueReInitTest) {
   EXPECT_EQ(0, Queue_Size(&queue));
 
   EXPECT_EQ(1, Queue_IsEmpty(&queue));
-  char *buffer_data = "Hello World";
-  uint32_t buffer_len = strlen(buffer_data);
-  EXPECT_EQ(0, Queue_Push(&queue, reinterpret_cast<void*>(buffer_data), buffer_len));
+  std::string buffer_data = "Hello World";
+  uint32_t buffer_len = buffer_data.length();
+  EXPECT_EQ(0, Queue_Push(&queue,buffer_data.data(), buffer_len));
 
   // EXPECT_EQ(0, Queue_Deinit(&queue, 570));
 

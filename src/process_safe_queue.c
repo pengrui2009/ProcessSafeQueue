@@ -63,8 +63,8 @@ int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, int sync) {
 
   if (sync == CREAT) {
     // init
-    queue_ptr->queue_data_ptr->start_index = 0;
-    queue_ptr->queue_data_ptr->end_index = 0;
+    queue_ptr->queue_data_ptr->pop_index = 0;
+    queue_ptr->queue_data_ptr->push_index = 0;
     queue_ptr->queue_data_ptr->size = 0;
     // TODO: what about malloc?
   }
@@ -107,17 +107,17 @@ void Queue_Print(struct ProcessSafeQueue* queue_ptr) {
   }
 
   printf("\n --------- Printing ------- \n");
-  printf("start_index:%d end_index:%d size:%d\n",
-         queue_ptr->queue_data_ptr->start_index,
-         queue_ptr->queue_data_ptr->end_index, queue_ptr->queue_data_ptr->size);
-  int start_index = queue_ptr->queue_data_ptr->start_index;
-  int end_index = 0;
+  printf("pop_index:%d push_index:%d size:%d\n",
+         queue_ptr->queue_data_ptr->pop_index,
+         queue_ptr->queue_data_ptr->push_index, queue_ptr->queue_data_ptr->size);
+  int pop_index = queue_ptr->queue_data_ptr->pop_index;
+  int push_index = 0;
   if (queue_ptr->queue_data_ptr->size) {
-    end_index = (queue_ptr->queue_data_ptr->start_index >=
-                 queue_ptr->queue_data_ptr->end_index)
-                    ? (queue_ptr->queue_data_ptr->end_index + MAX_CAPACITY)
-                    : queue_ptr->queue_data_ptr->end_index;
-    for (int i = start_index, j = 0; i < end_index; ++i, ++j) {
+    push_index = (queue_ptr->queue_data_ptr->pop_index >=
+                 queue_ptr->queue_data_ptr->push_index)
+                    ? (queue_ptr->queue_data_ptr->push_index + MAX_CAPACITY)
+                    : queue_ptr->queue_data_ptr->push_index;
+    for (int i = pop_index, j = 0; i < push_index; ++i, ++j) {
       printf("---- Element #%d ---\n", j);
       printf("Len:%d Data: %s\n",
              queue_ptr->queue_data_ptr->array[i % MAX_CAPACITY].buffer_len,
@@ -162,14 +162,14 @@ int Queue_Push(struct ProcessSafeQueue* queue_ptr, const void* data_ptr,
 
   if (queue_ptr->queue_data_ptr->size < MAX_CAPACITY) {
     memcpy(
-        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->end_index]
+        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->push_index]
             .buffer_data,
         data_ptr, data_len);
-    queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->end_index]
+    queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->push_index]
         .buffer_len = data_len;
-    queue_ptr->queue_data_ptr->end_index++;
-    if ((MAX_CAPACITY - 1) < queue_ptr->queue_data_ptr->end_index) {
-      queue_ptr->queue_data_ptr->end_index = 0;
+    queue_ptr->queue_data_ptr->push_index++;
+    if ((MAX_CAPACITY - 1) < queue_ptr->queue_data_ptr->push_index) {
+      queue_ptr->queue_data_ptr->push_index = 0;
     }
     queue_ptr->queue_data_ptr->size++;
     result = 0;
@@ -221,17 +221,17 @@ int Queue_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
   if (queue_ptr->queue_data_ptr->size > 0) {
     memcpy(
         data_ptr,
-        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->start_index]
+        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
             .buffer_data,
-        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->start_index]
+        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
             .buffer_len);
     *data_len =
-        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->start_index]
+        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
             .buffer_len;
-    queue_ptr->queue_data_ptr->start_index++;
+    queue_ptr->queue_data_ptr->pop_index++;
 
-    if ((MAX_CAPACITY - 1) < queue_ptr->queue_data_ptr->start_index) {
-      queue_ptr->queue_data_ptr->start_index = 0;
+    if ((MAX_CAPACITY - 1) < queue_ptr->queue_data_ptr->pop_index) {
+      queue_ptr->queue_data_ptr->pop_index = 0;
     }
     queue_ptr->queue_data_ptr->size--;
     result = 0;
@@ -287,17 +287,17 @@ int Queue_Wait_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
   if (queue_ptr->queue_data_ptr->size > 0) {
     memcpy(
         data_ptr,
-        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->start_index]
+        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
             .buffer_data,
-        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->start_index]
+        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
             .buffer_len);
     *data_len =
-        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->start_index]
+        queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
             .buffer_len;
-    queue_ptr->queue_data_ptr->start_index++;
+    queue_ptr->queue_data_ptr->pop_index++;
 
-    if ((MAX_CAPACITY - 1) < queue_ptr->queue_data_ptr->start_index) {
-      queue_ptr->queue_data_ptr->start_index = 0;
+    if ((MAX_CAPACITY - 1) < queue_ptr->queue_data_ptr->pop_index) {
+      queue_ptr->queue_data_ptr->pop_index = 0;
     }
     queue_ptr->queue_data_ptr->size--;
     result = 0;
