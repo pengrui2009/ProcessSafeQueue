@@ -44,8 +44,8 @@ It also contains `examples` and `units_test` :
     cmake .. && make all
     sudo make install
     ```
-- Library name is: safequeue
-- Include file name  is: safe_queue.h
+- Library name is: processSafeQueue
+- Include file name  is: process_safe_queue.h
 - If you want to use it in any of your c code do `#include <process_safe_queue.h>` and compile it using:
     ```
     # Here test.c is the name of your test file.
