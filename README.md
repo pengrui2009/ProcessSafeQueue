@@ -60,34 +60,34 @@ It also contains `examples` and `units_test` :
 
 ## Error Code:
 
--ERR_SYS             1          /* system fatal */
--ERR_SYS_SHMGET      10         /* system api:shmget fatal */
--ERR_SYS_SHMAT       11         /* system api:shmat fatal */
--ERR_SYS_SHMCTRL     12         /* system api:shmctrl fatal */
--ERR_SYS_SHMDT       13         /* system api:shmdt fatal */
--ERR_SYS_SEMOPEN     14         /* system api:semopen fatal */
--ERR_SYS_SEMWAIT     15         /* system api:semwait fatal */
--ERR_SYS_SEMTIMEWAIT 16         /* system api:semtimewait fatal */
--ERR_SYS_SEMPOST     17         /* system api:sempost fatal */
--ERR_SYS_SEMCLOSE    18         /* system api:semclose fatal */
--ERR_SYS_SEMDESTROY  19         /* system api:semdestroy fatal */
+- ERR_SYS             1          /* system fatal */
+- ERR_SYS_SHMGET      10         /* system api:shmget fatal */
+- ERR_SYS_SHMAT       11         /* system api:shmat fatal */
+- ERR_SYS_SHMCTRL     12         /* system api:shmctrl fatal */
+- ERR_SYS_SHMDT       13         /* system api:shmdt fatal */
+- ERR_SYS_SEMOPEN     14         /* system api:semopen fatal */
+- ERR_SYS_SEMWAIT     15         /* system api:semwait fatal */
+- ERR_SYS_SEMTIMEWAIT 16         /* system api:semtimewait fatal */
+- ERR_SYS_SEMPOST     17         /* system api:sempost fatal */
+- ERR_SYS_SEMCLOSE    18         /* system api:semclose fatal */
+- ERR_SYS_SEMDESTROY  19         /* system api:semdestroy fatal */
 
--ERR_QUEUE           2          /* queue fatal */
--ERR_QUEUE_UNDERFLOW 21         /* queue under flow fatal */
--ERR_QUEUE_OVERFLOW  22         /* queue over flow fatal */
+- ERR_QUEUE           2          /* queue fatal */
+- ERR_QUEUE_UNDERFLOW 21         /* queue under flow fatal */
+- ERR_QUEUE_OVERFLOW  22         /* queue over flow fatal */
 
--ERR_TIMEOUT         3          /* time out fatal */
+- ERR_TIMEOUT         3          /* time out fatal */
 
--ERR_INVAL           4          /* paramters invalid fatal */
--ERR_INVAL_NULLPOINT 40         /* point is NULL */
--ERR_INVAL_MEMSIZE   41         /* params size  */
+- ERR_INVAL           4          /* paramters invalid fatal */
+- ERR_INVAL_NULLPOINT 40         /* point is NULL */
+- ERR_INVAL_MEMSIZE   41         /* params size  */
 
--ERR_NOINIT          5          /* no initialize fatal */
--ERR_NOMEM           6          /* no memory fatal */
--ERR_NODISK          7          /* no disk fatal*/
--ERR_CFG             8          /* config fatal */
+- ERR_NOINIT          5          /* no initialize fatal */
+- ERR_NOMEM           6          /* no memory fatal */
+- ERR_NODISK          7          /* no disk fatal*/
+- ERR_CFG             8          /* config fatal */
 
--ERR_OTHER           80         /* others error */
+- ERR_OTHER           80         /* others error */
 
 
 ## Docs
