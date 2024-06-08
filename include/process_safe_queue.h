@@ -48,6 +48,7 @@ extern "C"
 struct Element {
   void *buffer_ptr;                   /* The data of the element buffer */
   uint32_t buffer_len;                /* The len of the element buffer*/
+  int shm_id;                         /* The shm id of element */
 };
 
 struct Queue {
@@ -57,6 +58,7 @@ struct Queue {
   uint32_t buffer_size;               /* The capacity of one element buffer*/
   struct Element array[MAX_QUEUE_SIZE]; /*Inner data structure to store contents
                                          in the queue*/
+  int shm_id;                         /* the shm id of queue*/
 };
 
 struct ProcessSafeQueue {

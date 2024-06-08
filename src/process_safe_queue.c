@@ -65,6 +65,7 @@ int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_cap
     result = -ERR_SYS_SHMAT;
     return result;
   }
+  queue_ptr->queue_data_ptr->shm_id = shm_id;
 
   // if (sync == CREAT) {
   //   // init
@@ -116,6 +117,7 @@ int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_cap
       result = -ERR_SYS_SHMAT;
       return result;
     }
+    queue_ptr->queue_data_ptr->array[index].shm_id = data_shm_id;
   }
   // sem_post(queue->dequeue_muttex);
   result = 0;
@@ -388,73 +390,20 @@ int Queue_IsEmpty(struct ProcessSafeQueue* queue_ptr) {
 }
 
 /**
- * @brief destory process safe queue
- *
- * @param queue_ptr
- * @param id
- */
-static int Queue_Destroy(struct ProcessSafeQueue* queue_ptr, int id) {
-  int result = -1;
-  int shmid = -1;
-
-  for (int index = 0; index < MAX_QUEUE_SIZE; index++)
-  {
-    int data_key = id + index + 1;
-    result = shmget(data_key, sizeof(struct ProcessSafeQueue), IPC_CREAT | 0666);
-    if (-1 == result)
-    {
-      result = -ERR_SYS_SHMGET;
-      return result;
-    }
-    int data_shmid = result;
-    result = shmctl(data_shmid, IPC_RMID, NULL);
-    if (-1 == result)
-    {
-      result = -ERR_SYS_SHMCTRL;
-      return result;
-    }
-  }
-
-  result = shmget(id, sizeof(struct ProcessSafeQueue), IPC_CREAT | 0666);
-  if (-1 == result)
-  {
-    result = -ERR_SYS_SHMGET;
-    return result;
-  }
-  shmid = result;
-  result = shmctl(shmid, IPC_RMID, NULL);
-  if (-1 == result)
-  {
-    result = -ERR_SYS_SHMCTRL;
-    return result;
-  }
-  result = sem_close(queue_ptr->queue_mutex_ptr);
-  if (-1 == result)
-  {
-    result = -ERR_SYS_SEMCLOSE;
-    return result;
-  }
-  result = sem_destroy(queue_ptr->queue_mutex_ptr);
-  if (-1 == result)
-  {
-    result = -ERR_SYS_SEMDESTROY;
-    return result;
-  }
-
-  return result;
-}
-
-/**
- * @brief detach process safe queue
+ * @brief Deinitialize process safe queue
  *
  * @param queue_ptr
  * @return int
  */
-static int Queue_Detach(struct ProcessSafeQueue* queue_ptr) {
+int Queue_Deinit(struct ProcessSafeQueue* queue_ptr, int id) {
   int result = -1;
+  int queue_shmid = 0;
+  int element_shmid[MAX_QUEUE_SIZE] = {0};
 
+  // detach shared memory
   for (int index = 0; index < MAX_QUEUE_SIZE ; index++)
   {
+    element_shmid[index] = queue_ptr->queue_data_ptr->array[index].shm_id;
     result = shmdt(queue_ptr->queue_data_ptr->array[index].buffer_ptr);
     if (result)
     {
@@ -463,34 +412,37 @@ static int Queue_Detach(struct ProcessSafeQueue* queue_ptr) {
     }
   }
 
+  queue_shmid = queue_ptr->queue_data_ptr->shm_id;
   result = shmdt(queue_ptr->queue_data_ptr);
   if (result)
   {
     result = -ERR_SYS_SHMDT;
     return result;
   }
-  
-  return result;
-}
 
-/**
- * @brief Deinitialize process safe queue
- *
- * @param queue_ptr
- * @return int
- */
-int Queue_Deinit(struct ProcessSafeQueue* queue_ptr, int id) {
-  int result = -1;
-
-  result = Queue_Detach(queue_ptr);
-  if (result)
+  // delete shared memroy
+  for (int index = 0; index < MAX_QUEUE_SIZE; index++)
   {
+    result = shmctl(element_shmid[index], IPC_RMID, NULL);
+    if (-1 == result)
+    {
+      result = -ERR_SYS_SHMCTRL;
+      return result;
+    }
+  }
+
+  result = shmctl(queue_shmid, IPC_RMID, NULL);
+  if (-1 == result)
+  {
+    result = -ERR_SYS_SHMCTRL;
     return result;
   }
 
-  result = Queue_Destroy(queue_ptr, id);
-  if (result)
+  // sem destory
+  result = sem_close(queue_ptr->queue_mutex_ptr);
+  if (-1 == result)
   {
+    result = -ERR_SYS_SEMCLOSE;
     return result;
   }
 
