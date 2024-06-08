@@ -1,98 +1,47 @@
-# ProcessSafeQueue
+/**
+ * @file process_safe_queue.h
+ * @author rui peng (pengrui_2009@163.com)
+ * @brief
+ * @version 0.1
+ * @date 2024-06-07
+ *
+ * @copyright Copyright (c) 2024
+ *
+ */
 
- **process_safe_queue** is implemented as a library and offers really rich features. 
- 
-Repo Features :
+#ifndef PROCESS_SAFE_QUEUE_H
+#define PROCESS_SAFE_QUEUE_H
 
-- support multi processes send and receive msgs by queue. 
-- support language: C/C++ .
+#include <fcntl.h>
+#include <semaphore.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
-# Process Safe Queue
+#ifdef __cplusplus
+extern "C" 
+{
+#endif
 
-This create an library for process safe queue. This queue can be used across multiple process inside a single system while
-solving the receive and send message problem.
+/*
+ * The maximum length of the queue
+ */
+#define MAX_CAPACITY 10
 
-## Usage
+/*
+ * The max capacity of data that can be stored an element of the queue
+ */
+#define DATA_CAPACITY 1024
 
-### Default compilation
+#define SYNC 1   // Used in init_queue
+#define CREAT 0  // Used in init_queue
 
-```
-git clone git@github.com:pengrui2009/ProcessSafeQueue.git
-cd process_safe_queue
-```
+#define EVERYTHING 1  // Used with print_queue
+#define ONLY_DATA 0   // Used with print queue
 
-
-```
-sudo apt-get install libgtest-dev libgmock-dev
-mkdir build
-cd build
-cmake ..
-make all
-```
-
-It also contains `examples` and `units_test` :
-
-- `examples`: contains the different process push and pop message.
-- `units_test`: contains the unit test cases.
-
-### Install it on your system
-
-- Install it using:
-    ```
-    mkdir build
-    cd build
-    cmake .. && make all
-    sudo make install
-    ```
-- Library name is: safequeue
-- Include file name  is: safe_queue.h
-- If you want to use it in any of your c code do `#include <process_safe_queue.h>` and compile it using:
-    ```
-    # Here test.c is the name of your test file.
-    gcc test.c -lprocessSafeQueue -lpthread -lrt
-    ```
-    
-- If you want to use it in any of your c++ code do `#include <process_safe_queue.h>` and compile it using:
-    ```
-    # Here test.c is the name of your test file.
-    g++ test.cpp -lprocessSafeQueue -lpthread -lrt
-    ```
-
-## Error Code:
-
-- ERR_SYS             1          /* system fatal */
-- ERR_SYS_SHMGET      10         /* system api:shmget fatal */
-- ERR_SYS_SHMAT       11         /* system api:shmat fatal */
-- ERR_SYS_SHMCTRL     12         /* system api:shmctrl fatal */
-- ERR_SYS_SHMDT       13         /* system api:shmdt fatal */
-- ERR_SYS_SEMOPEN     14         /* system api:semopen fatal */
-- ERR_SYS_SEMWAIT     15         /* system api:semwait fatal */
-- ERR_SYS_SEMTIMEWAIT 16         /* system api:semtimewait fatal */
-- ERR_SYS_SEMPOST     17         /* system api:sempost fatal */
-- ERR_SYS_SEMCLOSE    18         /* system api:semclose fatal */
-- ERR_SYS_SEMDESTROY  19         /* system api:semdestroy fatal */
-
-- ERR_QUEUE           2          /* queue fatal */
-- ERR_QUEUE_UNDERFLOW 21         /* queue under flow fatal */
-- ERR_QUEUE_OVERFLOW  22         /* queue over flow fatal */
-
-- ERR_TIMEOUT         3          /* time out fatal */
-
-- ERR_INVAL           4          /* paramters invalid fatal */
-- ERR_INVAL_NULLPOINT 40         /* point is NULL */
-- ERR_INVAL_MEMSIZE   41         /* params size  */
-
-- ERR_NOINIT          5          /* no initialize fatal */
-- ERR_NOMEM           6          /* no memory fatal */
-- ERR_NODISK          7          /* no disk fatal*/
-- ERR_CFG             8          /* config fatal */
-
-- ERR_OTHER           80         /* others error */
-
-
-## Docs
-
-```
 /**
  * Represents each element in the queue
  */
@@ -207,4 +156,8 @@ int Queue_IsEmpty(struct ProcessSafeQueue* queue_ptr);
  */
 int Queue_Deinit(struct ProcessSafeQueue* queue_ptr, int id);
 
-```
+#ifdef __cplusplus
+}
+#endif
+
+#endif /*PROCESS_SAFE_QUEUE_H*/
