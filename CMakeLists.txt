@@ -14,7 +14,7 @@ include_directories(
 )
 
 add_library(processSafeQueue SHARED
-    process_safe_queue/process_safe_queue.c
+    src/process_safe_queue.c
 )
 
 target_link_libraries(processSafeQueue
