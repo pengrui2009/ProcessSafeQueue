@@ -21,6 +21,11 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#ifdef __cplusplus
+extern "C" 
+{
+#endif
+
 /*
  * The maximum length of the queue
  */
@@ -73,7 +78,7 @@ struct ProcessSafeQueue {
  * - SYNC: if the queue has already been created and you need a pointer to it
  * @return a pointer the ProcessSafeQueue with @param id
  */
-int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, int sync);
+extern int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, int sync);
 
 /**
  * Enqueues the content, str, in queue
@@ -150,5 +155,9 @@ int Queue_IsEmpty(struct ProcessSafeQueue* queue_ptr);
  * @return int
  */
 int Queue_Deinit(struct ProcessSafeQueue* queue_ptr, int id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*PROCESS_SAFE_QUEUE_H*/

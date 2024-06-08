@@ -23,6 +23,10 @@
 
 #include "error.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /**
  * @brief initialize process safe queue
  *
@@ -243,6 +247,16 @@ int Queue_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
   return result;
 }
 
+/**
+ * @brief wait and pop queue with timeout
+ * 
+ * @param queue_ptr : thread safe queue ptr[input]
+ * @param data_ptr  : data buffer ptr[output]
+ * @param data_size : the size of data buffer [input]
+ * @param data_len  : the get length of data buffer [output]
+ * @param timeout   : timeout (unit:1ms)
+ * @return int      : 0: success other: failed
+ */
 int Queue_Wait_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
                    uint32_t data_size, uint32_t* data_len, uint32_t timeout) {
   int result = -1;
@@ -263,8 +277,8 @@ int Queue_Wait_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
   // sem_getvalue(queue_ptr->queue_mutex_ptr, &value);
   // printf("DeQueue sem value:%d\n", value);
 
-  to.tv_sec = time(NULL) + timeout;
-  to.tv_nsec = 0;
+  to.tv_sec = time(NULL) + timeout / 1000;
+  to.tv_nsec = (long)(timeout % 1000) * 1000000000L;
   if (sem_timedwait(queue_ptr->queue_mutex_ptr, &to)) {
     result = -ERR_SYS_SEMTIMEWAIT;
     return result;
@@ -299,6 +313,12 @@ int Queue_Wait_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
   return result;
 }
 
+/**
+ * @brief get the queue size
+ * 
+ * @param queue_ptr : queue ptr
+ * @return int      : the size of queue element 
+ */
 int Queue_Size(struct ProcessSafeQueue* queue_ptr) {
   int result = 0;
 
@@ -317,6 +337,12 @@ int Queue_Size(struct ProcessSafeQueue* queue_ptr) {
   return result;
 }
 
+/**
+ * @brief is queue empty
+ * 
+ * @param queue_ptr : queue ptr
+ * @return int      : 1:empty 0:not empty
+ */
 int Queue_IsEmpty(struct ProcessSafeQueue* queue_ptr) {
   int result = -1;
   result = sem_wait(queue_ptr->queue_mutex_ptr);
@@ -333,6 +359,7 @@ int Queue_IsEmpty(struct ProcessSafeQueue* queue_ptr) {
   }
   return result;
 }
+
 /**
  * @brief destory process safe queue
  *
@@ -404,7 +431,7 @@ int Queue_Deinit(struct ProcessSafeQueue* queue_ptr, int id) {
   {
     return result;
   }
-  
+
   result = Queue_Destroy(queue_ptr, id);
   if (result)
   {
@@ -413,3 +440,7 @@ int Queue_Deinit(struct ProcessSafeQueue* queue_ptr, int id) {
 
   return result;
 }
+
+#ifdef __cplusplus
+}
+#endif

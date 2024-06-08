@@ -8,6 +8,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 #   roscpp
 #   dataspeed_can_msgs
 # )
+# find_package(GTest REQUIRED)
 
 include_directories(
     include
@@ -20,15 +21,6 @@ add_library(processSafeQueue SHARED
 target_link_libraries(processSafeQueue
     rt
 )
-
-# add_executable(kvaser_can_bridge
-#   src/kvaser_can_bridge.cpp
-# )
-# target_link_libraries(kvaser_can_bridge
-#   ros_${PROJECT_NAME}
-#   ${catkin_LIBRARIES}
-# )
-
 
 ##################build examples####################
 add_executable(enqueue_demo
@@ -47,7 +39,20 @@ target_link_libraries(dequeue_demo
     pthread
 )
 
+##################build units test####################
+add_executable(units_test
+  tests/units_test.cpp
+)
+target_link_libraries(units_test
+  gtest
+  gtest_main
+  processSafeQueue
+  rt
+  pthread
+)
+
 install(TARGETS processSafeQueue LIBRARY DESTINATION lib/)
+install(TARGETS units_test DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
 
 # install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})

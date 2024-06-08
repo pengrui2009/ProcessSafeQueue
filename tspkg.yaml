@@ -3,6 +3,9 @@ version: __from_changelog__
 maintainer: rui.peng <pengrui_2009@163.com>
 cmake: any
 
+extra_deps:
+  apt: libgtest-dev libgmock-dev
+
 build: |
   mkdir -p build
   pushd build
