@@ -78,6 +78,7 @@ int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_cap
   // when shm not exist, then update max_data_capacity
   queue_ptr->queue_data_ptr->buffer_size = (queue_ptr->queue_data_ptr->buffer_size > 0) ? 
       queue_ptr->queue_data_ptr->buffer_size : max_data_capacity;
+
   /*
       Setting up queue mutex
   */
@@ -194,6 +195,7 @@ int Queue_Push(struct ProcessSafeQueue* queue_ptr, const void* data_ptr,
     memcpy(
         queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->push_index]
             .buffer_ptr,
+
         data_ptr, data_len);
     queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->push_index]
         .buffer_len = data_len;
