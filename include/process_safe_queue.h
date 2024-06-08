@@ -29,12 +29,12 @@ extern "C"
 /*
  * The maximum length of the queue
  */
-#define MAX_CAPACITY 10
+#define MAX_QUEUE_SIZE 20
 
 /*
  * The max capacity of data that can be stored an element of the queue
  */
-#define DATA_CAPACITY 1024
+#define MAX_DATA_CAPACITY 1024
 
 #define SYNC 1   // Used in init_queue
 #define CREAT 0  // Used in init_queue
@@ -46,15 +46,16 @@ extern "C"
  * Represents each element in the queue
  */
 struct Element {
-  uint8_t buffer_data[DATA_CAPACITY]; /* The data in the element*/
-  uint32_t buffer_len;                /* The length in the element*/
+  void *buffer_ptr;                   /* The data of the element buffer */
+  uint32_t buffer_len;                /* The len of the element buffer*/
 };
 
 struct Queue {
   int push_index;                     /*general queue push index*/
   int pop_index;                      /*general queue pop index*/
   int size;                           /*the size of queue element*/
-  struct Element array[MAX_CAPACITY]; /*Inner data structure to store contents
+  uint32_t buffer_size;               /* The capacity of one element buffer*/
+  struct Element array[MAX_QUEUE_SIZE]; /*Inner data structure to store contents
                                          in the queue*/
 };
 
@@ -68,17 +69,13 @@ struct ProcessSafeQueue {
  * structure using this function.
  *
  * @param id - Unique identifier for the queue
- * @param q
+ * @param queue_ptr - the queue ptr  
+ * @param max_data_capacity - the capacity of each queue buffer.
  *
  * ueue - queue to be used in future
- * @param sync -
- * - CREAT:if using it for the first time.
- *      Creation will fail if a queue with the particular @param id has already
- * been created
- * - SYNC: if the queue has already been created and you need a pointer to it
  * @return a pointer the ProcessSafeQueue with @param id
  */
-extern int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, int sync);
+extern int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_capacity);
 
 /**
  * Enqueues the content, str, in queue

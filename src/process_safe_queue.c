@@ -27,15 +27,21 @@
 extern "C"{
 #endif
 
+static int Shm_Init(key_t key, void **shm_ptr)
+{
+  int result = 0;
+
+  return result;
+}
 /**
  * @brief initialize process safe queue
  *
  * @param id                - Unique identifier for the queue
  * @param queue_ptr         - Initialize queue point(output)
- * @param sync              - Initialize method:CREAT or SYNC
+ * @param max_data_capacity - the capacity of each queue data buffer
  * @return struct ProcessSafeQueue*
  */
-int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, int sync) {
+int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_capacity) {
   int result = -1;
   int shm_id = -1;
   key_t key = id;
@@ -55,20 +61,22 @@ int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, int sync) {
   // shm is the link the shared mem
   if ((queue_ptr->queue_data_ptr = (struct Queue*)shmat(shm_id, NULL, 0)) ==
       (struct Queue*)-1) {
-    perror("error in shmat");
     shmctl(shm_id, IPC_RMID, NULL);
     result = -ERR_SYS_SHMAT;
     return result;
   }
 
-  if (sync == CREAT) {
-    // init
-    queue_ptr->queue_data_ptr->pop_index = 0;
-    queue_ptr->queue_data_ptr->push_index = 0;
-    queue_ptr->queue_data_ptr->size = 0;
-    // TODO: what about malloc?
-  }
-
+  // if (sync == CREAT) {
+  //   // init
+  //   queue_ptr->queue_data_ptr->pop_index = 0;
+  //   queue_ptr->queue_data_ptr->push_index = 0;
+  //   queue_ptr->queue_data_ptr->size = 0;
+  //   queue_ptr->queue_data_ptr->buffer_size = max_data_capacity;
+  //   // TODO: what about malloc?
+  // }
+  // when shm not exist, then update max_data_capacity
+  queue_ptr->queue_data_ptr->buffer_size = (queue_ptr->queue_data_ptr->buffer_size > 0) ? 
+      queue_ptr->queue_data_ptr->buffer_size : max_data_capacity;
   /*
       Setting up queue mutex
   */
@@ -88,6 +96,26 @@ int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, int sync) {
 
     result = -ERR_SYS_SEMOPEN;
     return result;
+  }
+
+  // attached each buffer of queue to shared memory
+  for (int index =0 ; index < MAX_QUEUE_SIZE; index++) {
+    // Creating a segment
+    int data_shm_id = -1;
+    key_t data_key = key + index + 1;
+    result = shmget(data_key, queue_ptr->queue_data_ptr->buffer_size, IPC_CREAT | 0600);
+    if (-1 == result) {
+      result = -ERR_SYS_SHMGET;
+      return result;
+    }
+    data_shm_id = result;
+    // shm is the link the shared mem
+    if ((queue_ptr->queue_data_ptr->array[index].buffer_ptr = (void *)shmat(data_shm_id, NULL, 0)) ==
+        (void *)-1) {
+      shmctl(data_shm_id, IPC_RMID, NULL);
+      result = -ERR_SYS_SHMAT;
+      return result;
+    }
   }
   // sem_post(queue->dequeue_muttex);
   result = 0;
@@ -115,14 +143,14 @@ void Queue_Print(struct ProcessSafeQueue* queue_ptr) {
   if (queue_ptr->queue_data_ptr->size) {
     push_index = (queue_ptr->queue_data_ptr->pop_index >=
                  queue_ptr->queue_data_ptr->push_index)
-                    ? (queue_ptr->queue_data_ptr->push_index + MAX_CAPACITY)
+                    ? (queue_ptr->queue_data_ptr->push_index + MAX_QUEUE_SIZE)
                     : queue_ptr->queue_data_ptr->push_index;
     for (int i = pop_index, j = 0; i < push_index; ++i, ++j) {
       printf("---- Element #%d ---\n", j);
       printf("Len:%d Data: %s\n",
-             queue_ptr->queue_data_ptr->array[i % MAX_CAPACITY].buffer_len,
-             (char*)(queue_ptr->queue_data_ptr->array[i % MAX_CAPACITY]
-                         .buffer_data));
+             queue_ptr->queue_data_ptr->array[i % MAX_QUEUE_SIZE].buffer_len,
+             (char*)(queue_ptr->queue_data_ptr->array[i % MAX_QUEUE_SIZE]
+                         .buffer_ptr));
     }
   }
 
@@ -146,7 +174,7 @@ int Queue_Push(struct ProcessSafeQueue* queue_ptr, const void* data_ptr,
     return result;
   }
 
-  if (DATA_CAPACITY < data_len) {
+  if (data_len > queue_ptr->queue_data_ptr->buffer_size) {
     result = -ERR_INVAL_MEMSIZE;
     return result;
   }
@@ -160,15 +188,15 @@ int Queue_Push(struct ProcessSafeQueue* queue_ptr, const void* data_ptr,
     return result;
   }
 
-  if (queue_ptr->queue_data_ptr->size < MAX_CAPACITY) {
+  if (queue_ptr->queue_data_ptr->size < MAX_QUEUE_SIZE) {
     memcpy(
         queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->push_index]
-            .buffer_data,
+            .buffer_ptr,
         data_ptr, data_len);
     queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->push_index]
         .buffer_len = data_len;
     queue_ptr->queue_data_ptr->push_index++;
-    if ((MAX_CAPACITY - 1) < queue_ptr->queue_data_ptr->push_index) {
+    if ((MAX_QUEUE_SIZE - 1) < queue_ptr->queue_data_ptr->push_index) {
       queue_ptr->queue_data_ptr->push_index = 0;
     }
     queue_ptr->queue_data_ptr->size++;
@@ -203,7 +231,7 @@ int Queue_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
     return result;
   }
 
-  if (DATA_CAPACITY < data_size) {
+  if (data_size < queue_ptr->queue_data_ptr->buffer_size) {
     result = -ERR_INVAL_MEMSIZE;
     return result;
   }
@@ -222,7 +250,7 @@ int Queue_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
     memcpy(
         data_ptr,
         queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
-            .buffer_data,
+            .buffer_ptr,
         queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
             .buffer_len);
     *data_len =
@@ -230,7 +258,7 @@ int Queue_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
             .buffer_len;
     queue_ptr->queue_data_ptr->pop_index++;
 
-    if ((MAX_CAPACITY - 1) < queue_ptr->queue_data_ptr->pop_index) {
+    if ((MAX_QUEUE_SIZE - 1) < queue_ptr->queue_data_ptr->pop_index) {
       queue_ptr->queue_data_ptr->pop_index = 0;
     }
     queue_ptr->queue_data_ptr->size--;
@@ -267,7 +295,7 @@ int Queue_Wait_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
     return result;
   }
 
-  if (DATA_CAPACITY < data_size) {
+  if (data_size < queue_ptr->queue_data_ptr->buffer_size) {
     result = -ERR_INVAL_MEMSIZE;
     return result;
   }
@@ -288,7 +316,7 @@ int Queue_Wait_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
     memcpy(
         data_ptr,
         queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
-            .buffer_data,
+            .buffer_ptr,
         queue_ptr->queue_data_ptr->array[queue_ptr->queue_data_ptr->pop_index]
             .buffer_len);
     *data_len =
@@ -296,14 +324,13 @@ int Queue_Wait_Pop(struct ProcessSafeQueue* queue_ptr, void* data_ptr,
             .buffer_len;
     queue_ptr->queue_data_ptr->pop_index++;
 
-    if ((MAX_CAPACITY - 1) < queue_ptr->queue_data_ptr->pop_index) {
+    if ((MAX_QUEUE_SIZE - 1) < queue_ptr->queue_data_ptr->pop_index) {
       queue_ptr->queue_data_ptr->pop_index = 0;
     }
     queue_ptr->queue_data_ptr->size--;
     result = 0;
   } else {
     result = -ERR_QUEUE_UNDERFLOW;
-    perror("Underflow");
   }
 
   if (-1 == sem_post(queue_ptr->queue_mutex_ptr)) {
@@ -370,6 +397,24 @@ static int Queue_Destroy(struct ProcessSafeQueue* queue_ptr, int id) {
   int result = -1;
   int shmid = -1;
 
+  for (int index = 0; index < MAX_QUEUE_SIZE; index++)
+  {
+    int data_key = id + index + 1;
+    result = shmget(data_key, sizeof(struct ProcessSafeQueue), IPC_CREAT | 0666);
+    if (-1 == result)
+    {
+      result = -ERR_SYS_SHMGET;
+      return result;
+    }
+    int data_shmid = result;
+    result = shmctl(data_shmid, IPC_RMID, NULL);
+    if (-1 == result)
+    {
+      result = -ERR_SYS_SHMCTRL;
+      return result;
+    }
+  }
+
   result = shmget(id, sizeof(struct ProcessSafeQueue), IPC_CREAT | 0666);
   if (-1 == result)
   {
@@ -407,6 +452,17 @@ static int Queue_Destroy(struct ProcessSafeQueue* queue_ptr, int id) {
  */
 static int Queue_Detach(struct ProcessSafeQueue* queue_ptr) {
   int result = -1;
+
+  for (int index = 0; index < MAX_QUEUE_SIZE ; index++)
+  {
+    result = shmdt(queue_ptr->queue_data_ptr->array[index].buffer_ptr);
+    if (result)
+    {
+      result = -ERR_SYS_SHMDT;
+      return result;
+    }
+  }
+
   result = shmdt(queue_ptr->queue_data_ptr);
   if (result)
   {
