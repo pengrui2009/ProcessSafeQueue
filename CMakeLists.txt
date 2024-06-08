@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(libProcessSafeQueue)
 
-# SET(CMAKE_CXX_FLAGS "-std=c11 -O3 -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++14 -O3 -Wall ${CMAKE_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 
 # find_package(catkin REQUIRED COMPONENTS
