@@ -39,6 +39,14 @@ target_link_libraries(dequeue_demo
     pthread
 )
 
+add_executable(clearqueue_demo
+    examples/clearqueue_demo.c
+)
+target_link_libraries(clearqueue_demo
+    processSafeQueue
+    pthread
+)
+
 ##################build units test####################
 add_executable(units_test
   tests/units_test.cpp

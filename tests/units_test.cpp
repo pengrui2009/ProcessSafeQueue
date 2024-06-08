@@ -4,9 +4,9 @@
 
 TEST(GQueueTest, QueueInitTest) {
   struct ProcessSafeQueue queue;
-  EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
+  EXPECT_EQ(0, Queue_Init(570, &queue, 50));
 
-  EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
+  EXPECT_EQ(0, Queue_Init(570, &queue, 50));
 
   EXPECT_EQ(0, Queue_Size(&queue));
 
@@ -17,7 +17,7 @@ TEST(GQueueTest, QueueInitTest) {
 
 TEST(GQueueTest, QueueDeInitTest) {
   struct ProcessSafeQueue queue;
-  EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
+  EXPECT_EQ(0, Queue_Init(570, &queue, 50));
 
   EXPECT_EQ(0, Queue_Size(&queue));
 
@@ -28,7 +28,7 @@ TEST(GQueueTest, QueueDeInitTest) {
 
   EXPECT_EQ(0, Queue_Deinit(&queue, 570));
 
-  EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
+  EXPECT_EQ(0, Queue_Init(570, &queue, 50));
   EXPECT_EQ(0, Queue_Size(&queue));
   EXPECT_EQ(1, Queue_IsEmpty(&queue));
 
@@ -37,7 +37,7 @@ TEST(GQueueTest, QueueDeInitTest) {
 
 TEST(GQueueTest, QueuePushTest) {
   struct ProcessSafeQueue queue;
-  EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
+  EXPECT_EQ(0, Queue_Init(570, &queue, 50));
 
   std::string buffer_data = "Hello World";
   uint32_t buffer_len = buffer_data.length();
@@ -50,7 +50,7 @@ TEST(GQueueTest, QueuePushTest) {
 
 TEST(GQueueTest, QueuePopTest) {
   struct ProcessSafeQueue queue;
-  EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
+  EXPECT_EQ(0, Queue_Init(570, &queue, 50));
 
   std::string buffer_data = "Hello World";
   uint32_t buffer_len = buffer_data.length();
@@ -58,8 +58,8 @@ TEST(GQueueTest, QueuePopTest) {
   EXPECT_EQ(1, Queue_Size(&queue));
   EXPECT_EQ(0, Queue_IsEmpty(&queue));
 
-  EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
-  uint8_t buffer1_data[40] = {0};
+  EXPECT_EQ(0, Queue_Init(570, &queue, 50));
+  uint8_t buffer1_data[50] = {0};
   uint32_t buffer1_size = sizeof(buffer1_data);
   uint32_t buffer1_len = 0;
   EXPECT_EQ(0, Queue_Pop(&queue, reinterpret_cast<void*>(buffer1_data), buffer1_size, &buffer1_len));
@@ -74,7 +74,7 @@ TEST(GQueueTest, QueuePopTest) {
 
 TEST(GQueueTest, QueueReInitTest) {
   struct ProcessSafeQueue queue;
-  EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
+  EXPECT_EQ(0, Queue_Init(570, &queue, 50));
 
   EXPECT_EQ(0, Queue_Size(&queue));
 
@@ -85,7 +85,7 @@ TEST(GQueueTest, QueueReInitTest) {
 
   // EXPECT_EQ(0, Queue_Deinit(&queue, 570));
 
-  EXPECT_EQ(0, Queue_Init(570, &queue, SYNC));
+  EXPECT_EQ(0, Queue_Init(570, &queue, 50));
   EXPECT_EQ(1, Queue_Size(&queue));
   EXPECT_EQ(0, Queue_IsEmpty(&queue));
 
@@ -96,7 +96,7 @@ TEST(GQueueTest, QueueReInitTest) {
 // TEST(GQueueTest, QueuePushTest)
 // {
 //     struct ProcessSafeQueue queue;
-//     EXPECT_EQ(0, Queue_Init(560, &queue, SYNC));
+//     EXPECT_EQ(0, Queue_Init(560, &queue));
 //     EXPECT_EQ(1, Queue_Pop(23, 10));
 //     EXPECT_EQ(1, gcd(359, 71));
 //     EXPECT_EQ(1, gcd(47, 83));

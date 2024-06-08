@@ -15,26 +15,13 @@ int main(int argc, char *argv[])
     }
 
     Queue_Print(&queue);
-    uint8_t buffer_data[50] = {0};
-    
-    if (argc >=2 )
-    {
-        sprintf(buffer_data, "this is queue element %s", argv[1]);
-    } else {
-        sprintf(buffer_data, "this is queue element0");
-    }
-    uint32_t buffer_len = strlen(buffer_data);
-    sleep(1);
-    
-    result = Queue_Push(&queue, buffer_data, buffer_len);
+
+    result = Queue_Deinit(&queue, 560);
     if (result)
     {
-        printf("Enqueue data: failed, result=%d!\n", result);
-    } else {
-        printf("Enqueue data: success.\n");
+        printf("Queue_Deinit failed, result=%d!\n", result);
+        return -1;
     }
-
-    Queue_Print(&queue);
     
     return 0;
 }
