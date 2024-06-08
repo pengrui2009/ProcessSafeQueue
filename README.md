@@ -102,8 +102,8 @@ struct Element {
 };
 
 struct Queue {
-  int start_index;                    /*general queue start index*/
-  int end_index;                      /*general queue end index*/
+  int push_index;                    /*general queue push index*/
+  int pop_index;                      /*general queue pop index*/
   int size;                           /*the size of queue element*/
   struct Element array[MAX_CAPACITY]; /*Inner data structure to store contents
                                          in the queue*/
