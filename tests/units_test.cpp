@@ -12,7 +12,7 @@ TEST(GQueueTest, QueueInitTest) {
 
   EXPECT_EQ(1, Queue_IsEmpty(&queue));
 
-  EXPECT_EQ(0, Queue_Deinit(&queue, 570));
+  EXPECT_EQ(0, Queue_Deinit(&queue));
 }
 
 TEST(GQueueTest, QueueDeInitTest) {
@@ -26,13 +26,13 @@ TEST(GQueueTest, QueueDeInitTest) {
   uint32_t buffer_len = buffer_data.length();
   EXPECT_EQ(0, Queue_Push(&queue, buffer_data.data(), buffer_len));
 
-  EXPECT_EQ(0, Queue_Deinit(&queue, 570));
+  EXPECT_EQ(0, Queue_Deinit(&queue));
 
   EXPECT_EQ(0, Queue_Init(570, &queue, 50));
   EXPECT_EQ(0, Queue_Size(&queue));
   EXPECT_EQ(1, Queue_IsEmpty(&queue));
 
-  EXPECT_EQ(0, Queue_Deinit(&queue, 570));
+  EXPECT_EQ(0, Queue_Deinit(&queue));
 }
 
 TEST(GQueueTest, QueuePushTest) {
@@ -45,7 +45,7 @@ TEST(GQueueTest, QueuePushTest) {
   EXPECT_EQ(1, Queue_Size(&queue));
   EXPECT_EQ(0, Queue_IsEmpty(&queue));
 
-  EXPECT_EQ(0, Queue_Deinit(&queue, 570));
+  EXPECT_EQ(0, Queue_Deinit(&queue));
 }
 
 TEST(GQueueTest, QueuePopTest) {
@@ -69,7 +69,7 @@ TEST(GQueueTest, QueuePopTest) {
   EXPECT_EQ(0, Queue_Size(&queue));
   EXPECT_EQ(1, Queue_IsEmpty(&queue));
 
-  EXPECT_EQ(0, Queue_Deinit(&queue, 570));
+  EXPECT_EQ(0, Queue_Deinit(&queue));
 }
 
 TEST(GQueueTest, QueueReInitTest) {
@@ -83,13 +83,13 @@ TEST(GQueueTest, QueueReInitTest) {
   uint32_t buffer_len = buffer_data.length();
   EXPECT_EQ(0, Queue_Push(&queue,buffer_data.data(), buffer_len));
 
-  // EXPECT_EQ(0, Queue_Deinit(&queue, 570));
+  // EXPECT_EQ(0, Queue_Deinit(&queue));
 
   EXPECT_EQ(0, Queue_Init(570, &queue, 50));
   EXPECT_EQ(1, Queue_Size(&queue));
   EXPECT_EQ(0, Queue_IsEmpty(&queue));
 
-  EXPECT_EQ(0, Queue_Deinit(&queue, 570));
+  EXPECT_EQ(0, Queue_Deinit(&queue));
 }
 
 
