@@ -1,3 +1,13 @@
+/**
+ * @file error.h
+ * @author rui.peng (pengrui_2009@163.com)
+ * @brief 
+ * @version 0.1
+ * @date 2024-06-09
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #ifndef ERROR_H
 #define ERROR_H
 
@@ -24,8 +34,8 @@
 #define ERR_TIMEOUT         3          /* time out fatal */
 
 #define ERR_INVAL           4          /* paramters invalid fatal */
-#define ERR_INVAL_NULLPOINT 40         /* point is NULL */
-#define ERR_INVAL_MEMSIZE   41         /* params size  */
+#define ERR_INVAL_NULLPOINT 40         /* paramters point is NULL fatal */
+#define ERR_INVAL_MEMSIZE   41         /* paramters the size of memory is not enought fatal */
 
 #define ERR_NOINIT          5          /* no initialize fatal */
 #define ERR_NOMEM           6          /* no memory fatal */
