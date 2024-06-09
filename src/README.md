@@ -43,22 +43,20 @@ See Docs and edit test.c accordingly. Do make all. Execute ./test
 ## Docs
 
 ```
-/**
- * Represents each element in the queue
- */
-struct element {
-    char data[DATA_CAPACITY]; /* The data in the element*/
-    struct lock_custom lock; /* Sets of locks for the safety elemet*/
+struct Queue {
+  int push_index;                     /*general queue push index*/
+  int pop_index;                      /*general queue pop index*/
+  int size;                           /*the size of queue element*/
+  uint32_t buffer_size;               /*the capacity of one element buffer*/
+  void *array[MAX_QUEUE_SIZE];        /*the array of buffer data structure to store all buffer contents
+                                         in the queue*/
 };
 
-struct safe_queue {
-    int start_index;                    /*general queue start index*/
-    int end_index;                      /*general queue end index*/
-    sem_t *enqueue_muttex;              /*Ensures atomicity of enqueue operation */
-    sem_t *dequeue_muttex;              /*Ensures atomicity of dequeue operation */
-    struct element array[MAX_CAPACITY]; /*Inner data structure to store contents in the queue*/
+struct ProcessSafeQueue {
+  key_t key_id;                       /* shm memory key id*/
+  struct Queue* queue_data_ptr;       /* shm memory data ptr*/
+  sem_t* queue_mutex_ptr;             /*Ensures atomicity of enqueue operation */
 };
-
 /**
  * Before using safe_queue you init get pointer to the queue data structure using this function.
  *

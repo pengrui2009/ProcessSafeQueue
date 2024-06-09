@@ -49,12 +49,13 @@ static int Shm_Init(key_t key, void **shm_ptr)
  */
 int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_capacity) {
   int result = -1;
-  int shm_id = -1;
+  int queue_shm_id = -1;
 
   if (NULL == queue_ptr) {
     result = -ERR_INVAL_NULLPOINT;
     return result;
   }
+
   queue_ptr->key_id = id;
   // Creating a segment
   result = shmget(queue_ptr->key_id, sizeof(struct Queue), IPC_CREAT | 0600);
@@ -63,11 +64,11 @@ int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_cap
     return result;
   }
 
-  shm_id = result;
+  queue_shm_id = result;
   // shm is the link the shared mem
-  if ((queue_ptr->queue_data_ptr = (struct Queue*)shmat(shm_id, NULL, 0)) ==
+  if ((queue_ptr->queue_data_ptr = (struct Queue*)shmat(queue_shm_id, NULL, 0)) ==
       (struct Queue*)-1) {
-    shmctl(shm_id, IPC_RMID, NULL);
+    shmctl(queue_shm_id, IPC_RMID, NULL);
     result = -ERR_SYS_SHMAT;
     return result;
   }
@@ -78,25 +79,25 @@ int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_cap
 
   /* create and attached each buffer of queue to shared memory */
   // array shm memory key id
-  key_t data_key = BufferKeyId(queue_ptr->key_id);
+  key_t datakey_id = BufferKeyId(queue_ptr->key_id);
   // array: N of buffer, buffer: buffer_len(4 bytes) + buffer_data(buffer_len bytes)
   size_t total_shm_capacity = ((queue_ptr->queue_data_ptr->buffer_size + BufferLenSize) * 
       MAX_QUEUE_SIZE);
-  result = shmget(data_key, total_shm_capacity, IPC_CREAT | 0600);
+  result = shmget(datakey_id, total_shm_capacity, IPC_CREAT | 0600);
   if (-1 == result) {
     shmdt(queue_ptr->queue_data_ptr);
-    shmctl(shm_id, IPC_RMID, NULL);
+    shmctl(queue_shm_id, IPC_RMID, NULL);
     result = -ERR_SYS_SHMGET;
     return result;
   }
   
   void *shmbuffer_ptr = NULL;
-  int data_shm_id = result;
+  int buffer_shm_id = result;
   // shm is the link the shared mem
-  if ((shmbuffer_ptr = (void *)shmat(data_shm_id, NULL, 0)) == (void *)-1) {
-    shmctl(data_shm_id, IPC_RMID, NULL);
+  if ((shmbuffer_ptr = (void *)shmat(buffer_shm_id, NULL, 0)) == (void *)-1) {
+    shmctl(buffer_shm_id, IPC_RMID, NULL);
     shmdt(queue_ptr->queue_data_ptr);
-    shmctl(shm_id, IPC_RMID, NULL);
+    shmctl(queue_shm_id, IPC_RMID, NULL);
     result = -ERR_SYS_SHMAT;
     return result;
   }
@@ -111,13 +112,13 @@ int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_cap
       Setting up queue mutex
   */
   char queue_mutex_str[100];
-  sprintf(queue_mutex_str, "queue_muttex%d", id);
+  sprintf(queue_mutex_str, "queue_mutex%d", id);
   queue_ptr->queue_mutex_ptr = sem_open(queue_mutex_str, O_CREAT, 0600, 1);
   if (SEM_FAILED == queue_ptr->queue_mutex_ptr) {
     shmdt(shmbuffer_ptr);
-    shmctl(data_shm_id, IPC_RMID, NULL);
+    shmctl(buffer_shm_id, IPC_RMID, NULL);
     shmdt(queue_ptr->queue_data_ptr);
-    shmctl(shm_id, IPC_RMID, NULL);
+    shmctl(queue_shm_id, IPC_RMID, NULL);
 
     result = -ERR_SYS_SEMOPEN;
     return result;
@@ -152,10 +153,11 @@ void Queue_Print(struct ProcessSafeQueue* queue_ptr) {
                     : queue_ptr->queue_data_ptr->push_index;
     for (int i = pop_index, j = 0; i < push_index; ++i, ++j) {
       uint32_t buffer_len = 0;
-      uint8_t buffer_ptr[100] = {0};
+      void *buffer_ptr = NULL;
       
       memcpy(&buffer_len, BufferLenAddr(queue_ptr->queue_data_ptr->array[i % MAX_QUEUE_SIZE]), BufferLenSize);
-      memcpy(buffer_ptr, BufferDataAddr(queue_ptr->queue_data_ptr->array[i % MAX_QUEUE_SIZE]), buffer_len);
+      buffer_ptr = BufferDataAddr(queue_ptr->queue_data_ptr->array[i % MAX_QUEUE_SIZE]);
+      
       printf("---- Element #%d ---\n", j);
       printf("Len:%d Data: %s\n", buffer_len, (char*)(buffer_ptr));
     }
