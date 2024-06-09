@@ -22,8 +22,7 @@
 #include <sys/shm.h>
 
 #ifdef __cplusplus
-extern "C" 
-{
+extern "C" {
 #endif
 
 /*
@@ -46,24 +45,23 @@ extern "C"
  * Represents each element in the queue
  */
 struct Element {
-  void *buffer_ptr;                   /* The data of the element buffer */
-  uint32_t buffer_len;                /* The len of the element buffer*/
-  int shm_id;                         /* The shm id of element */
+  void* buffer_ptr;    /* The data of the element buffer */
+  uint32_t buffer_len; /* The len of the element buffer*/
 };
 
 struct Queue {
-  int push_index;                     /*general queue push index*/
-  int pop_index;                      /*general queue pop index*/
-  int size;                           /*the size of queue element*/
-  uint32_t buffer_size;               /*The capacity of one element buffer*/
-  void *array[MAX_QUEUE_SIZE];        /*Inner data structure to store contents
-                                         in the queue*/
+  int push_index;              /*general queue push index*/
+  int pop_index;               /*general queue pop index*/
+  int size;                    /*the size of queue element*/
+  uint32_t buffer_size;        /*the capacity of one element buffer*/
+  void* array[MAX_QUEUE_SIZE]; /*the array of buffer data structure to store all
+                                  buffer contents in the queue*/
 };
 
 struct ProcessSafeQueue {
-  key_t key_id;                       /* shm memory key id*/
-  struct Queue* queue_data_ptr;       /* shm memory data ptr*/
-  sem_t* queue_mutex_ptr;             /*Ensures atomicity of enqueue operation */
+  key_t key_id;                 /* shm memory key id*/
+  struct Queue* queue_data_ptr; /* shm memory data ptr*/
+  sem_t* queue_mutex_ptr;       /*Ensures atomicity of enqueue operation */
 };
 
 /**
@@ -71,13 +69,14 @@ struct ProcessSafeQueue {
  * structure using this function.
  *
  * @param id - Unique identifier for the queue
- * @param queue_ptr - the queue ptr  
- * @param max_data_capacity - the capacity of each queue buffer.
+ * @param queue_ptr - the queue ptr
+ * @param max_data_capacity - the capacity of each element buffer.
  *
  * ueue - queue to be used in future
  * @return a pointer the ProcessSafeQueue with @param id
  */
-extern int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr, uint32_t max_data_capacity);
+extern int Queue_Init(int id, struct ProcessSafeQueue* queue_ptr,
+                      uint32_t max_data_capacity);
 
 /**
  * Enqueues the content, str, in queue
