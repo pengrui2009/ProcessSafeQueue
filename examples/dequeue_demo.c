@@ -8,7 +8,7 @@ int main()
     // struct ProcessSafeQueue *queue_ptr = 
     //     (struct ProcessSafeQueue *)malloc(sizeof(struct ProcessSafeQueue)); 
     struct ProcessSafeQueue queue;
-    result = Queue_Init(562, &queue, 100);
+    result = Queue_Init(569, &queue, 100);
     if (result)
     {
         printf("Queue_Init failed, result=%d!\n", result);

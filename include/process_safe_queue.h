@@ -55,15 +55,15 @@ struct Queue {
   int push_index;                     /*general queue push index*/
   int pop_index;                      /*general queue pop index*/
   int size;                           /*the size of queue element*/
-  uint32_t buffer_size;               /* The capacity of one element buffer*/
-  struct Element array[MAX_QUEUE_SIZE]; /*Inner data structure to store contents
+  uint32_t buffer_size;               /*The capacity of one element buffer*/
+  void *array[MAX_QUEUE_SIZE];        /*Inner data structure to store contents
                                          in the queue*/
-  int shm_id;                         /* the shm id of queue*/
 };
 
 struct ProcessSafeQueue {
-  struct Queue* queue_data_ptr;
-  sem_t* queue_mutex_ptr; /*Ensures atomicity of enqueue operation */
+  key_t key_id;                       /* shm memory key id*/
+  struct Queue* queue_data_ptr;       /* shm memory data ptr*/
+  sem_t* queue_mutex_ptr;             /*Ensures atomicity of enqueue operation */
 };
 
 /**
@@ -153,7 +153,7 @@ int Queue_IsEmpty(struct ProcessSafeQueue* queue_ptr);
  * @param queue_ptr
  * @return int
  */
-int Queue_Deinit(struct ProcessSafeQueue* queue_ptr, int id);
+int Queue_Deinit(struct ProcessSafeQueue* queue_ptr);
 
 #ifdef __cplusplus
 }
